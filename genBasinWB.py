@@ -60,14 +60,14 @@ def main():
 
     # Initialize datetime objects
     try:
-        wb_data.bDateGlobal = datetime.datetime.strptime(args.begDate[0], '%Y%m%d%H')
+        wb_data.bDateGlobal = datetime.datetime.strptime(str(args.begDate[0]), '%Y%m%d%H')
     except:
         print("Unable to initialize the global beginning date on rank: " + str(mpiMeta.rank))
         mpiMeta.comm.Abort()
         sys.exit(1)
 
     try:
-        wb_data.eDateGlobal = datetime.datetime.strptime(args.endDate[0], '%Y%m%d%H')
+        wb_data.eDateGlobal = datetime.datetime.strptime(str(args.endDate[0]), '%Y%m%d%H')
     except:
         print("Unable to initialize the global ending date on rank: " + str(mpiMeta.rank))
         mpiMeta.comm.Abort()
