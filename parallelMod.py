@@ -64,7 +64,7 @@ class MpiConfig:
         else:
             local_steps = local_steps_constant
 
-        begIndGlobal = local_steps_constant * (self.rank - 1)
+        begIndGlobal = local_steps_constant * self.rank
         endIndGlobal = begIndGlobal + local_steps
 
         # Loop through all of the local steps, assign the date index, and
