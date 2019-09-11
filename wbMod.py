@@ -135,7 +135,7 @@ class wbObj:
                                                       regridSub[stepTmp]
 
             # Use the scikit image processing to resample
-            self.bsnMskLand = downscale_local_mean(self.bsnMskHydro[bsnTmp], (int(self.aggFact), int(self.aggFact)))
+            self.bsnMskLand[bsnTmp] = downscale_local_mean(self.bsnMskHydro[bsnTmp], (int(self.aggFact), int(self.aggFact)))
 
             # Reset temporary arrays for next basin tracing.
             doneLinks = None
