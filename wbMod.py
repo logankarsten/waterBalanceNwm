@@ -135,7 +135,7 @@ class wbObj:
                                                       regridSub[stepTmp]
 
             # Use the scikit image processing to resample
-            self.bsnMskLand = downscale_local_mean(self.bsnMskHydro[bsnTmp], (self.aggFact, self.aggFact))
+            self.bsnMskLand = downscale_local_mean(self.bsnMskHydro[bsnTmp], (int(self.aggFact), int(self.aggFact)))
 
             # Reset temporary arrays for next basin tracing.
             doneLinks = None
@@ -146,10 +146,14 @@ class wbObj:
 
             outPathTmp = "BSN_" + str(self.gageIDs[bsnTmp]) + "_RANK_" + str(MpiConfig.rank) + ".nc"
             idTmp = Dataset(outPathTmp, 'w')
-            idTmp.createDimension('x', self.nxHydro)
-            idTmp.createDimension('y', self.nyHydro)
-            idTmp.createVariable('mask', np.float32, ('y', 'x'))
-            idTmp.variables['mask'][:, :] = self.bsnMskHydro[bsnTmp]
+            idTmp.createDimension('xHydro', self.nxHydro)
+            idTmp.createDimension('yHydro', self.nyHydro)
+            idTmp.createDimension('xLand', self.nxLand)
+            idTmp.createDimension('yLand', self.nyLand)
+            idTmp.createVariable('mask_hydro', np.float32, ('yHydro', 'xHydro'))
+            idTmp.variables['mask_hydro'][:, :] = self.bsnMskHydro[bsnTmp]
+            idTmp.createVariable('mask_land', np.float32, ('yLand', 'xLand'))
+            idTmp.variables['mask_land'][:, :] = self.bsnMskLand[bsnTmp]
             idTmp.close()
 
         # Close the NetCDF files and reset variables for memory purposes
