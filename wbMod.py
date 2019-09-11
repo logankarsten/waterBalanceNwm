@@ -127,7 +127,7 @@ class wbObj:
 
             # Loop over all unique I/J values for this basin. Sum up the weight values
             # and place them into the mask grid.
-            for stepTmp in range(0, len(polyInd)):
+            for stepTmp in range(0, len(regridSub)):
                 iTmp = iVarSub[stepTmp]
                 jTmp = jVarSub[stepTmp]
                 self.bsnMskHydro[bsnTmp][iTmp,jTmp] = self.bsnMskHydro[bsnTmp][iTmp,jTmp] +\
