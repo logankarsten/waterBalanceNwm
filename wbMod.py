@@ -93,8 +93,8 @@ class wbObj:
         self.aggFact = self.geoRes / self.hydRes
         self.nxHydro = idFullDom.variables['x'].shape[0]
         self.nyHydro = idFullDom.variables['y'].shape[0]
-        self.nxLand = idGeo.variables['XLAT_M'].shape[1]
-        self.nyLand = idGeo.variables['XLAT_M'].shape[0]
+        self.nxLand = idGeo.variables['XLAT_M'].shape[2]
+        self.nyLand = idGeo.variables['XLAT_M'].shape[1]
 
         # Process each geospatial info for the gages. Store into a dictionary object.
         for bsnTmp in np.unique(MpiConfig.bInd):
@@ -143,6 +143,14 @@ class wbObj:
             regridSub = None
             iVarSub = None
             jVarSub = None
+
+            outPathTmp = "BSN_" + str(self.gageIDs[bsnTmp]) + "_RANK_" + str(MpiConfig.rank) + ".nc"
+            idTmp = Dataset(outPathTmp, 'w')
+            idTmp.createDimension('x', self.nxHydro)
+            idTmp.createDimension('y', self.nyHydro)
+            idTmp.createVariable('mask', np.float32, ('y', 'x'))
+            idTmp.variables['mask'][:, :] = self.bsnMskHydro[bsnTmp]
+            idTmp.close()
 
         # Close the NetCDF files and reset variables for memory purposes
         idFullDom.close()
