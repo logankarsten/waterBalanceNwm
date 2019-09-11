@@ -1,5 +1,6 @@
 from netCDF4 import Dataset
 import numpy as np
+from skimage.transform import downscale_local_mean
 
 class wbObj:
     """
@@ -132,6 +133,9 @@ class wbObj:
                 jTmp = jVarSub[stepTmp]
                 self.bsnMskHydro[bsnTmp][iTmp,jTmp] = self.bsnMskHydro[bsnTmp][iTmp,jTmp] +\
                                                       regridSub[stepTmp]
+
+            # Use the scikit image processing to resample
+            self.bsnMskLand = downscale_local_mean(self.bsnMskHydro, (self.nyLand, self.nxLand))
 
             # Reset temporary arrays for next basin tracing.
             doneLinks = None
