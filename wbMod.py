@@ -1,6 +1,7 @@
 from netCDF4 import Dataset
 import numpy as np
 from skimage.transform import downscale_local_mean
+import os
 
 class wbObj:
     """
@@ -11,6 +12,8 @@ class wbObj:
         Initialize the object class that will contain information.
         """
         self.geoPath = None
+        self.modelDir = None
+        self.outDir = None
         self.fullDomPath = None
         self.rtLinkPath = None
         self.spWtPath = None
@@ -47,6 +50,8 @@ class wbObj:
         self.upstreamLinks = {}
         self.bsnMskLand = {}
         self.bsnMskHydro = {}
+        self.bsnMskLandArea = {}
+        self.bsnMskHydroArea = {}
         self.gageIDs = {}
         self.linksLocal = {}
 
@@ -144,9 +149,17 @@ class wbObj:
             iVarSub = None
             jVarSub = None
 
+            # Calculate basin area in squared meters.
+            self.bsnMskLandArea[bsnTmp] = self.bsnMskLand[bsnTmp] * (self.geoRes * self.geoRes)
+            self.bsnMskLandArea[bsnTmp] = self.bsnMskLandArea.sum()
+            self.bsnMskHydroArea[bsnTmp] = self.bsnMskHydro[bsnTmp] * (self.hydRes * self.hydRes)
+            self.bsnMskHydroArea[bsnTmp] = self.bsnMskHydroArea.sum()
+
         # Close the NetCDF files and reset variables for memory purposes
         idFullDom.close()
         idRt.close()
+        idWt.close()
+        idGeo.close()
 
         toVar = None
         linkVar = None
@@ -154,4 +167,61 @@ class wbObj:
         regridWeightVar = None
         iVar = None
         jVar = None
+
+    def readLdasOut(self, stepCurrent, dCurrent):
+        """
+        Function to read in LDASOUT water balance related variables and aggregate to the basin using the
+        pre-calculated masks on the land grid.
+        :return:
+        """
+        modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".LDASOUT_DOMAIN1"
+
+        # If the file is not present, this may not indicate an issue, but that we are only producing
+        # LDASOUT files at an infrequent time period. Simply return to the main calling program and leave
+        # values in our local arrays to missing.
+        if not os.path.isfile(modelPath):
+            return
+
+        # Open the NetCDF file.
+        idLdas = Dataset(modelPath, 'r')
+
+        # Read in SWE and aggregate to the basin.
+        varTmp = idLdas.variables['SNEQV'][0,:,:]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes) # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand
+        self.accSneqLocal[stepCurrent] = varTmp.sum() # Volume of cubic meters.
+        varTmp = None
+
+        # Close the NetCDF file.
+        idLdas.close()
+
+    def outputWb(self, MpiConfig):
+        """
+        Output routine that collects water balance variables from various processors, then breaks things up
+        by basin into a final NetCDF file.
+        :param MpiConfig:
+        :return:
+        """
+        outPath = self.outDir + "/WaterBudget_" + self.bDateGlobal.strftime('%Y%m%d%H') + "_" + \
+                  self.eDateGlobal.stftime('%Y%m%d%H') + ".nc"
+
+        if MpiConfig.rank == 0:
+            if os.path.isfile(outPath):
+                print("Water budget output file: " + outPath + " already exists.")
+                raise Exception()
+
+            # Create ouptut file.
+            idOut = Dataset(outPath, 'w')
+
+            idOut.createDimension('numBasins', len(self.basinsGlobal))
+            idOut.createDimension('numSteps', self.nGlobalSteps)
+
+            idOut.createVariable('SWE_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+
+        # Collect arrays
+        final = MpiConfig.comm.gather(self.accSneqLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
 

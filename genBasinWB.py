@@ -52,6 +52,10 @@ def main():
         print("Expected forcing directory for the NWM simulation: " + args.force_dir[0] + " not found.")
         sys.exit(-1)
 
+    if not os.path.isdir(args.model_dir[0]):
+        print("Expected model output directory: " + args.model_dir[0] + " not found.")
+        sys.exit(-1)
+
     if not os.path.isdir(args.out_dir[0]):
         print("Expected output directory to hold water balance output files: " + args.out_dir[0] + " not found.")
         sys.exit(-1)
@@ -88,6 +92,8 @@ def main():
     wb_data.geoPath = args.geoGrid[0]
     wb_data.rtLinkPath = args.rtLink[0]
     wb_data.spWtPath = args.spWtFile[0]
+    wb_data.modelDir = args.model_dir[0]
+    wb_data.outDir = args.out_dir[0]
 
     # Initialize datetime objects
     try:
@@ -143,6 +149,17 @@ def main():
 
     # Perform upstream tracing and calculation of masks on the hydro and land grids.
     wb_data.calcGeoParams(mpiMeta)
+
+    # Begin looping through each time step, read in the land/hydro/gw variables, aggregate 2D fields using the
+    # basin masks, and store data in the local arrays.
+    for step in range(mpiMeta.bInd.shape[0]):
+        dCurrent = wb_data.bDateGlobal + datetime.timedelta(seconds=3600*mpiMeta.dInd[step])
+
+        # Read in LDASOUT variables and aggregate to the basins.
+
+    # Place output into a final NetCDF file.
+
+
 
 if __name__ == "__main__":
     main()
