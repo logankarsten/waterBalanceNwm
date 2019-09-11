@@ -36,6 +36,8 @@ def main():
                         help='Fulldom file defining the 2D routing grid.')
     parser.add_argument('rtLink', metavar='rtLink', type=str, nargs='+',
                         help='Route link path.')
+    parser.add_argument('spWtFile', metavar='spWtFile', type=str, nargs='+',
+                        help='Spatial weight file used in generation of basin masks.')
 
 
     # Process the input arguments into the program.
@@ -66,6 +68,10 @@ def main():
         print("Expected route link file: " + args.rtLink[0] + " not found.")
         sys.exit(1)
 
+    if not os.path.isfile(args.spWtFile[0]):
+        print("Expected spatial weight file: " + args.spWtFile[0] + " not found.")
+        sys.exit(1)
+
     # Initialize the MPI objects necessary to parallize the processing.
     mpiMeta = parallelMod.MpiConfig()
     try:
@@ -81,6 +87,7 @@ def main():
     wb_data.fullDomPath = args.fullDom[0]
     wb_data.geoPath = args.geoGrid[0]
     wb_data.rtLinkPath = args.rtLink[0]
+    wb_data.spWtPath = args.spWtFile[0]
 
     # Initialize datetime objects
     try:

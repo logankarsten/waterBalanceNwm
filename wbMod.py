@@ -12,6 +12,11 @@ class wbObj:
         self.geoPath = None
         self.fullDomPath = None
         self.rtLinkPath = None
+        self.spWtPath = None
+        self.nxHydro = None
+        self.nyHydro = None
+        self.nxLand = None
+        self.nyLand = None
         self.basinsGlobal = None
         self.nGlobalBasins = None
         self.nGlobalSteps = None
@@ -39,8 +44,8 @@ class wbObj:
         self.hydRes = None
         self.aggFact = None
         self.upstreamLinks = {}
-        self.bsnMsksLand = {}
-        self.bsnMsksHydro = {}
+        self.bsnMskLand = {}
+        self.bsnMskHydro = {}
         self.gageIDs = {}
         self.linksLocal = {}
 
@@ -68,13 +73,27 @@ class wbObj:
             print("Unable to open: " + self.rtLinkPath)
             raise Exception()
 
+        try:
+            idWt = Dataset(self.spWtPath, 'r')
+        except:
+            print("Unable to open: " + self.spWtPath)
+            raise Exception()
+
         toVar = idRt.variables['to'][:].data
         linkVar = idRt.variables['link'][:].data
+        idMaskVar = idWt.variables['IDmask'][:].data
+        regridWeightVar = idWt.variables['regridweight'][:].data
+        iVar = idWt.variables['i_index'][:].data
+        jVar = idWt.variables['j_index'][:].data
 
         self.geoRes = idGeo.DX
         # Hard-code for now...
         self.hydRes = 250.0
         self.aggFact = self.geoRes / self.hydRes
+        self.nxHydro = idFullDom.variables['x'].shape[0]
+        self.nyHydro = idFullDom.variables['y'].shape[1]
+        self.nxLand = idGeo.variables['XLAT_M'].shape[1]
+        self.nyLand = idGeo.variables['XLAT_M'].shape[0]
 
         # Process each geospatial info for the gages. Store into a dictionary object.
         for bsnTmp in np.unique(MpiConfig.bInd):
@@ -96,8 +115,30 @@ class wbObj:
 
             self.upstreamLinks[bsnTmp] = doneLinks
 
+            # Extract which polygons in the weight file are associated with the
+            # upstream links.
+            polyInd = np.in1d(idMaskVar, doneLinks, invert=False)
+            regridSub = regridWeightVar[polyInd]
+            iVarSub = iVar[polyInd]
+            jVarSub = jVar[polyInd]
+
+            # Create a mask grid on the hydro grid.
+            self.bsnMskHydro[bsnTmp] = np.full([self.nyHydro, self.nxHydro], 0.0)
+
+            # Loop over all unique I/J values for this basin. Sum up the weight values
+            # and place them into the mask grid.
+            for stepTmp in range(0, len(polyInd)):
+                iTmp = iVarSub[stepTmp]
+                jTmp = jVarSub[stepTmp]
+                self.bsnMskHydro[bsnTmp][iTmp,jTmp] = self.bsnMskHydro[bsnTmp][iTmp,jTmp] +\
+                                                      regridSub[stepTmp]
+
             # Reset temporary arrays for next basin tracing.
             doneLinks = None
+            polyInd = None
+            regridSub = None
+            iVarSub = None
+            jVarSub = None
 
         # Close the NetCDF files and reset variables for memory purposes
         idFullDom.close()
@@ -105,4 +146,8 @@ class wbObj:
 
         toVar = None
         linkVar = None
+        idMaskVar = None
+        regridWeightVar = None
+        iVar = None
+        jVar = None
 
