@@ -1,3 +1,6 @@
+from netCDF4 import Dataset
+import numpy as np
+
 class wbObj:
     """
     Object to contain information on basins being processed, date ranges, etc.
@@ -6,12 +9,100 @@ class wbObj:
         """
         Initialize the object class that will contain information.
         """
+        self.geoPath = None
+        self.fullDomPath = None
+        self.rtLinkPath = None
         self.basinsGlobal = None
         self.nGlobalBasins = None
         self.nGlobalSteps = None
         self.linksGlobal = None
         self.bDateGlobal = None
         self.eDateGlobal = None
-        #self.basinsLocal = None
-        #self.bDateLocal = None
-        #self.eDateLocal = None
+        self.streamVolLocal = None
+        self.qLatVolLocal = None
+        self.accPrcpLocal = None
+        self.accEcanLocal = None
+        self.accEtranLocal = None
+        self.accEdirLocal = None
+        self.accSneqLocal = None
+        self.canIceLocal = None
+        self.canLiqLocal = None
+        self.sfcRnoffLocal = None
+        self.uGrdRnoffLocal = None
+        self.soilMLocal = None
+        self.sfcHeadSubRtLocal = None
+        self.qbdryRtLocal = None
+        self.qStrmVolRtLocal = None
+        self.gwOutLocal = None
+        self.zLevLocal = None
+        self.geoRes = None
+        self.hydRes = None
+        self.aggFact = None
+        self.upstreamLinks = {}
+        self.bsnMsksLand = {}
+        self.bsnMsksHydro = {}
+        self.gageIDs = {}
+        self.linksLocal = {}
+
+    def calcGeoParams(self, MpiConfig):
+        """
+        Function that calculates all geospatial parameters for each streamflow location
+        in order to properly calculate the water budget.
+        :return:
+        """
+        try:
+            idGeo = Dataset(self.geoPath,'r')
+        except:
+            print("Unable to open: " + self.geoPath)
+            raise Exception()
+
+        try:
+            idFullDom = Dataset(self.fullDomPath,'r')
+        except:
+            print("Unable to open: " + self.fullDomPath)
+            raise Exception()
+
+        try:
+            idRt = Dataset(self.rtLinkPath, 'r')
+        except:
+            print("Unable to open: " + self.rtLinkPath)
+            raise Exception()
+
+        toVar = idRt.variables['to'][:].data
+        linkVar = idRt.variables['link'][:].data
+
+        self.geoRes = idGeo.DX
+        # Hard-code for now...
+        self.hydRes = 250.0
+        self.aggFact = self.geoRes / self.hydRes
+
+        # Process each geospatial info for the gages. Store into a dictionary object.
+        for bsnTmp in np.unique(MpiConfig.bInd):
+            # Fetch the gage ID and link from the water budget object.
+            self.gageIDs[bsnTmp] = self.basinsGlobal[bsnTmp]
+            self.linksLocal[bsnTmp] = self.linksGlobal[bsnTmp]
+
+            # First, we will calculate all of the upstream links for this particular gage
+            # site.
+            upLinks = np.full([1],self.linksGlobal[bsnTmp])
+            doneLinks = np.full([0],0)
+
+            while len(upLinks) > 0:
+                i = upLinks[0]
+                doneLinks = np.append(doneLinks, i)
+                newLinks = linkVar[np.where(toVar == i)]
+                upLinks = np.append(upLinks, newLinks)
+                upLinks = upLinks[np.in1d(upLinks, doneLinks, invert=True)]
+
+            self.upstreamLinks[bsnTmp] = doneLinks
+
+            # Reset temporary arrays for next basin tracing.
+            doneLinks = None
+
+        # Close the NetCDF files and reset variables for memory purposes
+        idFullDom.close()
+        idRt.close()
+
+        toVar = None
+        linkVar = None
+

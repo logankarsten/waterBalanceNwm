@@ -30,6 +30,13 @@ def main():
                         help='Directory containing necessary NWM output files to be read in')
     parser.add_argument('out_dir', metavar='output directory where water balance values will be outputted to '
                                            'a NetCDF file')
+    parser.add_argument('geoGrid', metavar='geoGrid', type=str, nargs='+',
+                        help='Geogrid file defining the land surface modeling grid.')
+    parser.add_argument('fullDom', metavar='fullDom', type=str, nargs='+',
+                        help='Fulldom file defining the 2D routing grid.')
+    parser.add_argument('rtLink', metavar='rtLink', type=str, nargs='+',
+                        help='Route link path.')
+
 
     # Process the input arguments into the program.
     args = parser.parse_args()
@@ -47,6 +54,18 @@ def main():
         print("Expected output directory to hold water balance output files: " + args.out_dir[0] + " not found.")
         sys.exit(-1)
 
+    if not os.path.isfile(args.geoGrid[0]):
+        print("Expected geogrid file: " + args.geoGrid[0] + " not found.")
+        sys.exit(1)
+
+    if not os.path.isfile(args.fullDom[0]):
+        print("Expected fullDom file: " + args.fullDom[0] + " not found.")
+        sys.exit(1)
+
+    if not os.path.isfile(args.rtLink[0]):
+        print("Expected route link file: " + args.rtLink[0] + " not found.")
+        sys.exit(1)
+
     # Initialize the MPI objects necessary to parallize the processing.
     mpiMeta = parallelMod.MpiConfig()
     try:
@@ -57,6 +76,11 @@ def main():
 
     # Initialize the water balance object.
     wb_data = wbMod.wbObj()
+
+    # Assign file paths.
+    wb_data.fullDomPath = args.fullDom[0]
+    wb_data.geoPath = args.geoGrid[0]
+    wb_data.rtLinkPath = args.rtLink[0]
 
     # Initialize datetime objects
     try:
@@ -101,10 +125,14 @@ def main():
     gagesTmp = None
     dtTmp = None
 
-    # Initialize local and global arrays. Global arrays are only calculated on
-    # rank 0 as this is sent to the output files.
-
-
+    # Initialize local information on which boundaries and basins to process. Local
+    # arrays holding water budget variables will also be initialized.
+    try:
+        mpiMeta.calc_boundaries(wb_data)
+    except:
+        print("Unable to calculate local basins and dates")
+        mpiMeta.comm.Abort()
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

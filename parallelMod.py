@@ -76,3 +76,21 @@ class MpiConfig:
             indCurrent = begIndGlobal + stepTmp
             self.bInd[stepTmp] = math.floor(indCurrent / wbObj.nGlobalSteps)
             self.dInd[stepTmp] = indCurrent % wbObj.nGlobalSteps
+
+        # Initialize local water balance arrays that will be populated.
+        wbObj.accEcanLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.accEdirLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.accEtranLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.accPrcpLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.accSneqLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.canIceLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.canLiqLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.sfcRnoffLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.sfcHeadSubRtLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.uGrdRnoffLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.soilMLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.streamVolLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.qLatVolLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.qbdryRtLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.gwOutLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.zLevLocal = np.full([local_steps], -9999.0, np.float64)
