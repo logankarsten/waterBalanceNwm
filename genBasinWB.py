@@ -141,5 +141,8 @@ def main():
         mpiMeta.comm.Abort()
         sys.exit(1)
 
+    # Perform upstream tracing and calculation of masks on the hydro and land grids.
+    wb_data.calcGeoParams(mpiMeta)
+
 if __name__ == "__main__":
     main()
