@@ -144,18 +144,6 @@ class wbObj:
             iVarSub = None
             jVarSub = None
 
-            outPathTmp = "BSN_" + str(self.gageIDs[bsnTmp]) + "_RANK_" + str(MpiConfig.rank) + ".nc"
-            idTmp = Dataset(outPathTmp, 'w')
-            idTmp.createDimension('xHydro', self.nxHydro)
-            idTmp.createDimension('yHydro', self.nyHydro)
-            idTmp.createDimension('xLand', self.nxLand)
-            idTmp.createDimension('yLand', self.nyLand)
-            idTmp.createVariable('mask_hydro', np.float32, ('yHydro', 'xHydro'))
-            idTmp.variables['mask_hydro'][:, :] = self.bsnMskHydro[bsnTmp]
-            idTmp.createVariable('mask_land', np.float32, ('yLand', 'xLand'))
-            idTmp.variables['mask_land'][:, :] = self.bsnMskLand[bsnTmp]
-            idTmp.close()
-
         # Close the NetCDF files and reset variables for memory purposes
         idFullDom.close()
         idRt.close()
