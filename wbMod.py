@@ -91,7 +91,7 @@ class wbObj:
         self.hydRes = 250.0
         self.aggFact = self.geoRes / self.hydRes
         self.nxHydro = idFullDom.variables['x'].shape[0]
-        self.nyHydro = idFullDom.variables['y'].shape[1]
+        self.nyHydro = idFullDom.variables['y'].shape[0]
         self.nxLand = idGeo.variables['XLAT_M'].shape[1]
         self.nyLand = idGeo.variables['XLAT_M'].shape[0]
 
