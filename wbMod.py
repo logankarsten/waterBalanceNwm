@@ -207,7 +207,7 @@ class wbObj:
         :return:
         """
         outPath = self.outDir + "/WaterBudget_" + self.bDateGlobal.strftime('%Y%m%d%H') + "_" + \
-                  self.eDateGlobal.stftime('%Y%m%d%H') + ".nc"
+                  self.eDateGlobal.strftime('%Y%m%d%H') + ".nc"
 
         if MpiConfig.rank == 0:
             if os.path.isfile(outPath):
