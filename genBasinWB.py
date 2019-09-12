@@ -161,6 +161,9 @@ def main():
         # Place output into a final NetCDF file.
         wb_data.readLdasOut(step, dCurrent, basinCurrent, mpiMeta)
 
+    # Create output file containing final data.
+    wb_data.outputWb(mpiMeta)
+
 
 if __name__ == "__main__":
     main()
