@@ -176,8 +176,8 @@ class wbObj:
         """
         modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".LDASOUT_DOMAIN1"
 
-        if MpiConfig.rank == 0:
-            print(modelPath)
+        #if MpiConfig.rank == 0:
+        #    print(modelPath)
 
         # If the file is not present, this may not indicate an issue, but that we are only producing
         # LDASOUT files at an infrequent time period. Simply return to the main calling program and leave
@@ -230,5 +230,13 @@ class wbObj:
         if MpiConfig.rank == 0:
             dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
 
-            np.save('test_final.npy',dataOutTmp)
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
+                idOut.variables['SWE_Volume'][bTmp,:] = dataOutTmp[bIndTmp:eIndTmp]
+
+        # Close the output netCDF file.
+        if MpiConfig.rank == 0:
+            idOut.close()
