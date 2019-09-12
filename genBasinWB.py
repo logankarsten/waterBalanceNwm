@@ -28,8 +28,8 @@ def main():
                              'the basin')
     parser.add_argument('model_dir', metavar='model_dir', type=str, nargs='+',
                         help='Directory containing necessary NWM output files to be read in')
-    parser.add_argument('out_dir', metavar='output directory where water balance values will be outputted to '
-                                           'a NetCDF file')
+    parser.add_argument('out_dir', metavar='out_dir', type=str, nargs='+',
+                        help='Directory containing all of the output files.')
     parser.add_argument('geoGrid', metavar='geoGrid', type=str, nargs='+',
                         help='Geogrid file defining the land surface modeling grid.')
     parser.add_argument('fullDom', metavar='fullDom', type=str, nargs='+',
