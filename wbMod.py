@@ -50,8 +50,8 @@ class wbObj:
         self.upstreamLinks = {}
         self.bsnMskLand = {}
         self.bsnMskHydro = {}
-        self.bsnMskLandArea = {}
-        self.bsnMskHydroArea = {}
+        #self.bsnMskLandArea = {}
+        #self.bsnMskHydroArea = {}
         self.gageIDs = {}
         self.linksLocal = {}
 
@@ -136,7 +136,7 @@ class wbObj:
             for stepTmp in range(0, len(regridSub)):
                 iTmp = iVarSub[stepTmp]
                 jTmp = jVarSub[stepTmp]
-                self.bsnMskHydro[bsnTmp][iTmp,jTmp] = self.bsnMskHydro[bsnTmp][iTmp,jTmp] +\
+                self.bsnMskHydro[bsnTmp][jTmp,iTmp] = self.bsnMskHydro[bsnTmp][jTmp,iTmp] +\
                                                       regridSub[stepTmp]
 
             # Use the scikit image processing to resample
@@ -150,10 +150,10 @@ class wbObj:
             jVarSub = None
 
             # Calculate basin area in squared meters.
-            self.bsnMskLandArea[bsnTmp] = self.bsnMskLand[bsnTmp] * (self.geoRes * self.geoRes)
-            self.bsnMskLandArea[bsnTmp] = self.bsnMskLandArea.sum()
-            self.bsnMskHydroArea[bsnTmp] = self.bsnMskHydro[bsnTmp] * (self.hydRes * self.hydRes)
-            self.bsnMskHydroArea[bsnTmp] = self.bsnMskHydroArea.sum()
+            #self.bsnMskLandArea[bsnTmp] = self.bsnMskLand[bsnTmp] * (self.geoRes * self.geoRes)
+            #self.bsnMskLandArea[bsnTmp] = self.bsnMskLandArea.sum()
+            #self.bsnMskHydroArea[bsnTmp] = self.bsnMskHydro[bsnTmp] * (self.hydRes * self.hydRes)
+            #self.bsnMskHydroArea[bsnTmp] = self.bsnMskHydroArea.sum()
 
         # Close the NetCDF files and reset variables for memory purposes
         idFullDom.close()
@@ -168,13 +168,16 @@ class wbObj:
         iVar = None
         jVar = None
 
-    def readLdasOut(self, stepCurrent, dCurrent):
+    def readLdasOut(self, stepCurrent, dCurrent, bCurrent, MpiConfig):
         """
         Function to read in LDASOUT water balance related variables and aggregate to the basin using the
         pre-calculated masks on the land grid.
         :return:
         """
         modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".LDASOUT_DOMAIN1"
+
+        if MpiConfig.rank == 0:
+            print(modelPath)
 
         # If the file is not present, this may not indicate an issue, but that we are only producing
         # LDASOUT files at an infrequent time period. Simply return to the main calling program and leave
@@ -189,7 +192,7 @@ class wbObj:
         varTmp = idLdas.variables['SNEQV'][0,:,:]
         indTmp = np.where(varTmp >= 0.0)
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes) # Convert to cubic meters
-        varTmp = varTmp * self.bsnMskLand
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.accSneqLocal[stepCurrent] = varTmp.sum() # Volume of cubic meters.
         varTmp = None
 

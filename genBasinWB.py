@@ -153,12 +153,13 @@ def main():
     # Begin looping through each time step, read in the land/hydro/gw variables, aggregate 2D fields using the
     # basin masks, and store data in the local arrays.
     for step in range(mpiMeta.bInd.shape[0]):
-        dCurrent = wb_data.bDateGlobal + datetime.timedelta(seconds=3600*mpiMeta.dInd[step])
+        dCurrent = wb_data.bDateGlobal + datetime.timedelta(seconds=3600*int(mpiMeta.dInd[step]))
+        basinCurrent = mpiMeta.bInd[step]
 
         # Read in LDASOUT variables and aggregate to the basins.
 
     # Place output into a final NetCDF file.
-
+    wb_data.readLdasOut(step, dCurrent, basinCurrent, mpiMeta)
 
 
 if __name__ == "__main__":
