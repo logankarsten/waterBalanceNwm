@@ -227,4 +227,8 @@ class wbObj:
 
         MpiConfig.comm.barrier()
 
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            np.save('test_final.npy',dataOutTmp)
 

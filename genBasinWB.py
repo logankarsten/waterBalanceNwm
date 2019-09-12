@@ -158,8 +158,8 @@ def main():
 
         # Read in LDASOUT variables and aggregate to the basins.
 
-    # Place output into a final NetCDF file.
-    wb_data.readLdasOut(step, dCurrent, basinCurrent, mpiMeta)
+        # Place output into a final NetCDF file.
+        wb_data.readLdasOut(step, dCurrent, basinCurrent, mpiMeta)
 
 
 if __name__ == "__main__":
