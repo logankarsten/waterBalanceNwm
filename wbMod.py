@@ -365,7 +365,7 @@ class wbObj:
         # Using the pre-calculated uplinks, we will subset the inflow/outflow volumes,
         # then sum up total volumes for the entire basin.
         varTmp = idGw.variables['feature_id'][:]
-        gwInd = np.in1d(varTmp, self.upstreamLinks[bCurrent], invert=False)
+        gwInd = np.in1d(varTmp, self.upstreamLinks[bCurrent], invert=True)
         varTmp = None
 
         # Read in GW inflow and aggregate to the basin.
