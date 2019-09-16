@@ -375,6 +375,45 @@ class wbObj:
         # Close the NetCDF file.
         idGw.close()
 
+    def readChrtout(self, stepCurrent, dCurrent, bCurrent, MpiConfig):
+        """
+        Function that will read in hourly streamflow for a given basin and convert to a water volume.
+        Assuming hourly outputs here.
+        :param stepCurrent:
+        :param dCurrent:
+        :param bCurrent:
+        :param MpiConfig:
+        :return:
+        """
+        modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".GWOUT_DOMAIN1"
+
+        # if MpiConfig.rank == 0:
+        #    print(modelPath)
+
+        # If the file is not present, this may not indicate an issue, but that we are only producing
+        # GWOUT files at an infrequent time period. Simply return to the main calling program and leave
+        # values in our local arrays to missing.
+        if not os.path.isfile(modelPath):
+            return
+
+        # Open the NetCDF file.
+        idCh = Dataset(modelPath, 'r')
+
+        # Read in the streamflow, along with the feature_id variable.
+        # Using the pre-calculated uplinks, we will subset the inflow/outflow volumes,
+        # then sum up total volumes for the entire basin.
+        varTmp = idGw.variables['feature_id'][:]
+        varInd = np.where(varTmp == self.linksGlobal[bCurrent])
+        varTmp = None
+
+        # Read in GW inflow and aggregate to the basin.
+        varTmp = idGw.variables['streamflow'][varInd]
+        self.streamVolLocal[stepCurrent] = varTmp * 3600.0  # Volume of cubic meters.
+        varTmp = None
+
+        # Close the NetCDF file.
+        idCh.close()
+
     def outputWb(self, MpiConfig):
         """
         Output routine that collects water balance variables from various processors, then breaks things up
@@ -612,9 +651,6 @@ class wbObj:
 
         final = MpiConfig.comm.gather(self.gwOutLocal, root=0)
 
-
-        final = MpiConfig.comm.gather(self.streamVolLocal, root=0)
-
         MpiConfig.comm.barrier()
 
         if MpiConfig.rank == 0:
@@ -641,9 +677,17 @@ class wbObj:
 
                 idOut.variables['GWOUT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
-        final = MpiConfig.comm.gather(self.gwOutLocal, root=0)
-
         final = MpiConfig.comm.gather(self.streamVolLocal, root=0)
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['Stream_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
         MpiConfig.comm.barrier()
 
