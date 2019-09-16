@@ -482,6 +482,8 @@ class wbObj:
 
                 idOut.variables['SWE_Volume'][bTmp,:] = dataOutTmp[bIndTmp:eIndTmp]
 
+        MpiConfig.comm.barrier()
+
         final = MpiConfig.comm.gather(self.accPrcpLocal, root=0)
 
         MpiConfig.comm.barrier()
@@ -495,6 +497,8 @@ class wbObj:
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
                 idOut.variables['PRCP_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        MpiConfig.comm.barrier()
 
         final = MpiConfig.comm.gather(self.accEcanLocal, root=0)
 
@@ -510,6 +514,8 @@ class wbObj:
 
                 idOut.variables['ECAN_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
+        MpiConfig.comm.barrier()
+
         final = MpiConfig.comm.gather(self.accEdirLocal, root=0)
 
         MpiConfig.comm.barrier()
@@ -523,6 +529,8 @@ class wbObj:
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
                 idOut.variables['EDIR_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        MpiConfig.comm.barrier()
 
         final = MpiConfig.comm.gather(self.accEtranLocal, root=0)
 
@@ -538,6 +546,8 @@ class wbObj:
 
                 idOut.variables['ETRAN_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
+        MpiConfig.comm.barrier()
+
         final = MpiConfig.comm.gather(self.canIceLocal, root=0)
 
         MpiConfig.comm.barrier()
@@ -551,6 +561,8 @@ class wbObj:
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
                 idOut.variables['CANICE_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        MpiConfig.comm.barrier()
 
         final = MpiConfig.comm.gather(self.canLiqLocal, root=0)
 
@@ -566,6 +578,8 @@ class wbObj:
 
                 idOut.variables['CANLIQ_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
+        MpiConfig.comm.barrier()
+
         final = MpiConfig.comm.gather(self.sfcRnoffLocal, root=0)
 
         MpiConfig.comm.barrier()
@@ -579,6 +593,8 @@ class wbObj:
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
                 idOut.variables['SFCRNOFF_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        MpiConfig.comm.barrier()
 
         final = MpiConfig.comm.gather(self.uGrdRnoffLocal, root=0)
 
@@ -594,6 +610,8 @@ class wbObj:
 
                 idOut.variables['UGRDRNOFF_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
+        MpiConfig.comm.barrier()
+
         final = MpiConfig.comm.gather(self.soilMLocal, root=0)
 
         MpiConfig.comm.barrier()
@@ -607,6 +625,8 @@ class wbObj:
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
                 idOut.variables['SOIL_M_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        MpiConfig.comm.barrier()
 
         final = MpiConfig.comm.gather(self.sfcHeadSubRtLocal, root=0)
 
@@ -622,6 +642,8 @@ class wbObj:
 
                 idOut.variables['SFCHEAD_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
+        MpiConfig.comm.barrier()
+
         final = MpiConfig.comm.gather(self.qbdryRtLocal, root=0)
 
         MpiConfig.comm.barrier()
@@ -635,6 +657,8 @@ class wbObj:
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
                 idOut.variables['QBDRYRT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        MpiConfig.comm.barrier()
 
         final = MpiConfig.comm.gather(self.qStrmVolRtLocal, root=0)
 
@@ -650,6 +674,8 @@ class wbObj:
 
                 idOut.variables['QSTRMVOLRT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
+        MpiConfig.comm.barrier()
+
         final = MpiConfig.comm.gather(self.gwInLocal, root=0)
 
         MpiConfig.comm.barrier()
@@ -664,6 +690,8 @@ class wbObj:
 
                 idOut.variables['GWIN_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
+        MpiConfig.comm.barrier()
+
         final = MpiConfig.comm.gather(self.gwOutLocal, root=0)
 
         MpiConfig.comm.barrier()
@@ -678,19 +706,7 @@ class wbObj:
 
                 idOut.variables['GWOUT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
-        final = MpiConfig.comm.gather(self.gwOutLocal, root=0)
-
         MpiConfig.comm.barrier()
-
-        if MpiConfig.rank == 0:
-            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
-
-            # Loop through each basin and place final output variables.
-            for bTmp in range(len(self.basinsGlobal)):
-                bIndTmp = bTmp * self.nGlobalSteps
-                eIndTmp = (bTmp + 1) * self.nGlobalSteps
-
-                idOut.variables['GWOUT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
         final = MpiConfig.comm.gather(self.streamVolLocal, root=0)
 
