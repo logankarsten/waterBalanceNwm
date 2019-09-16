@@ -193,7 +193,7 @@ class wbObj:
         # Read in SWE and aggregate to the basin.
         varTmp = idLdas.variables['SNEQV'][0,:,:]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0  # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes) # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.accSneqLocal[stepCurrent] = varTmp.sum() # Volume of cubic meters.
@@ -202,7 +202,7 @@ class wbObj:
         # Read in accumulated precipitation and aggregate to the basin.
         varTmp = idLdas.variables['ACCPRCP'][0,:,:]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0  # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.accPrcpLocal[stepCurrent] = varTmp.sum()
@@ -211,7 +211,7 @@ class wbObj:
         # Read in accumulated canopy evaporation and aggregate to the basin.
         varTmp = idLdas.variables['ACCECAN'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0  # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.accEcanLocal[stepCurrent] = varTmp.sum()
@@ -220,7 +220,7 @@ class wbObj:
         # Read in accumulated evapotranspiration and aggregate to the basin.
         varTmp = idLdas.variables['ACCETRAN'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0  # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.accEtranLocal[stepCurrent] = varTmp.sum()
@@ -229,7 +229,7 @@ class wbObj:
         # Read in accumulated ??????? and aggregate to the basin.
         varTmp = idLdas.variables['ACCEDIR'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0  # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.accEdirLocal[stepCurrent] = varTmp.sum()
@@ -238,7 +238,7 @@ class wbObj:
         # Read in canopy ice and aggregate to the basin.
         varTmp = idLdas.variables['CANICE'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0  # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.canIceLocal[stepCurrent] = varTmp.sum()
@@ -247,7 +247,7 @@ class wbObj:
         # Read in canopy liquid and aggregate to the basin.
         varTmp = idLdas.variables['CANLIQ'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0  # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.canLiqLocal[stepCurrent] = varTmp.sum()
@@ -256,7 +256,7 @@ class wbObj:
         # Read in surface runoff and aggregate to the basin.
         varTmp = idLdas.variables['SFCRNOFF'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0 # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.sfcRnoffLocal[stepCurrent] = varTmp.sum()
@@ -265,7 +265,7 @@ class wbObj:
         # Read in underground runoff runoff and aggregate to the basin.
         varTmp = idLdas.variables['UGDRNOFF'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0  # Convert from mm to meters
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskLand[bCurrent]
         self.uGrdRnoffLocal[stepCurrent] = varTmp.sum()
@@ -313,7 +313,7 @@ class wbObj:
         # Read in surface head and aggregate to the basin.
         varTmp = idRt.variables['sfcheadsubrt'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.hydRes * self.hydRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskHydro[bCurrent]
         self.sfcHeadSubRtLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
@@ -322,7 +322,7 @@ class wbObj:
         # Read in QBDRYRT and aggregate to the basin.
         varTmp = idRt.variables['QBDRYRT'][0, :, :]
         indTmp = np.where(varTmp != varTmp.fill_value)
-        varTmp = varTmp[indTmp] / 1000.0
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.hydRes * self.hydRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskHydro[bCurrent]
         self.qbdryRtLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
@@ -331,7 +331,7 @@ class wbObj:
         # Read in QSTRMVOLRT and aggregate to the basin.
         varTmp = idRt.variables['QSTRMVOLRT'][0, :, :]
         indTmp = np.where(varTmp >= 0.0)
-        varTmp = varTmp[indTmp] / 1000.0
+        varTmp[indTmp] = varTmp[indTmp] / 1000.0  # Convert from mm to meters
         varTmp[indTmp] = varTmp[indTmp] * (self.hydRes * self.hydRes)  # Convert to cubic meters
         varTmp = varTmp * self.bsnMskHydro[bCurrent]
         self.qStrmVolRtLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
