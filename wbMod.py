@@ -383,7 +383,7 @@ class wbObj:
         indTmp = np.where(varTmp != varTmp.fill_value)
         varTmp = varTmp[indTmp]
         varTmp = varTmp * 3600.0  # Converting m^3/s to cubic meters.
-        self.gwInLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
+        self.gwOutLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
         varTmp = None
 
         # Close the NetCDF file.
