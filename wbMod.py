@@ -437,8 +437,8 @@ class wbObj:
 
             idOut.createVariable('SWE_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
             idOut.createVariable('PRCP_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
-            idOut.createVariable('CAN_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
-            idOut.createVariable('DIR_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('ECAN_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('EDIR_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
             idOut.createVariable('ETRAN_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
             idOut.createVariable('CANICE_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
             idOut.createVariable('CANLIQ_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
@@ -451,6 +451,7 @@ class wbObj:
             idOut.createVariable('GWIN_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
             idOut.createVariable('GWOUT_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
             idOut.createVariable('Stream_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('Accumulated_Streamflow_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
 
         # Collect arrays
         final = MpiConfig.comm.gather(self.accSneqLocal, root=0)
@@ -493,7 +494,7 @@ class wbObj:
                 bIndTmp = bTmp * self.nGlobalSteps
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
-                idOut.variables['CAN_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+                idOut.variables['ECAN_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
         final = MpiConfig.comm.gather(self.accEdirLocal, root=0)
 
@@ -507,7 +508,7 @@ class wbObj:
                 bIndTmp = bTmp * self.nGlobalSteps
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
-                idOut.variables['DIR_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+                idOut.variables['EDIR_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
 
         final = MpiConfig.comm.gather(self.accEtranLocal, root=0)
 
@@ -688,6 +689,12 @@ class wbObj:
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
                 idOut.variables['Stream_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+                sumTmp = dataOutTmp[bIndTmp:eIndTmp]
+                sumTmp = np.cumsum(sumTmp)
+                idOut.variables['Accumulated_Streamflow_Volume'][bTmp, :] = sumTmp
+                sumTmp = None
+
 
         MpiConfig.comm.barrier()
 
