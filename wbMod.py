@@ -178,8 +178,8 @@ class wbObj:
         """
         modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".LDASOUT_DOMAIN1"
 
-        #if MpiConfig.rank == 0:
-        #    print(modelPath)
+        if MpiConfig.rank == 0:
+            print(modelPath)
 
         # If the file is not present, this may not indicate an issue, but that we are only producing
         # LDASOUT files at an infrequent time period. Simply return to the main calling program and leave
