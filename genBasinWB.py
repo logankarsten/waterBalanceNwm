@@ -160,6 +160,9 @@ def main():
 
         # Place output into a final NetCDF file.
         wb_data.readLdasOut(step, dCurrent, basinCurrent, mpiMeta)
+        wb_data.readChrtout(step, dCurrent, basinCurrent, mpiMeta)
+        wb_data.readGwOut(step, dCurrent, basinCurrent, mpiMeta)
+        wb_data.readRtOut(step, dCurrent, basinCurrent, mpiMeta)
 
     # Create output file containing final data.
     wb_data.outputWb(mpiMeta)
