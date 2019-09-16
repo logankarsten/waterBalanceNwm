@@ -397,6 +397,21 @@ class wbObj:
             idOut.createDimension('numSteps', self.nGlobalSteps)
 
             idOut.createVariable('SWE_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('PRCP_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('CAN_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('DIR_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('ETRAN_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('CANICE_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('CANLIQ_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('SFCRNOFF_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('UGRDRNOFF_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('SOIL_M_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('SFCHEAD_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('QBDRYRT_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('QSTRMVOLRT_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('GWIN_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('GWOUT_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
+            idOut.createVariable('Stream_Volume', np.float64, ('numBasins', 'numSteps'), fill_value=-9999.0)
 
         # Collect arrays
         final = MpiConfig.comm.gather(self.accSneqLocal, root=0)
@@ -412,6 +427,226 @@ class wbObj:
                 eIndTmp = (bTmp + 1) * self.nGlobalSteps
 
                 idOut.variables['SWE_Volume'][bTmp,:] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.accPrcpLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['PRCP_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.accEcanLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['CAN_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.accEdirLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['DIR_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.accEtranLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['ETRAN_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.canIceLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['CANICE_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.canLiqLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['CANLIQ_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.sfcRnoffLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['SFCRNOFF_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.uGrdRnoffLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['UGRDRNOFF_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.soilMLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['SOIL_M_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.sfcHeadSubRtLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['SFCHEAD_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.qbdryRtLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['QBDRYRT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.qStrmVolRtLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['QSTRMVOLRT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.gwInLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['GWIN_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.gwOutLocal, root=0)
+
+
+        final = MpiConfig.comm.gather(self.streamVolLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['GWOUT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.gwOutLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
+        if MpiConfig.rank == 0:
+            dataOutTmp = np.concatenate([final[i] for i in range(MpiConfig.size)], axis=0)
+
+            # Loop through each basin and place final output variables.
+            for bTmp in range(len(self.basinsGlobal)):
+                bIndTmp = bTmp * self.nGlobalSteps
+                eIndTmp = (bTmp + 1) * self.nGlobalSteps
+
+                idOut.variables['GWOUT_Volume'][bTmp, :] = dataOutTmp[bIndTmp:eIndTmp]
+
+        final = MpiConfig.comm.gather(self.gwOutLocal, root=0)
+
+        final = MpiConfig.comm.gather(self.streamVolLocal, root=0)
+
+        MpiConfig.comm.barrier()
+
 
         # Close the output netCDF file.
         if MpiConfig.rank == 0:
