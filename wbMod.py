@@ -402,12 +402,12 @@ class wbObj:
         # Read in the streamflow, along with the feature_id variable.
         # Using the pre-calculated uplinks, we will subset the inflow/outflow volumes,
         # then sum up total volumes for the entire basin.
-        varTmp = idGw.variables['feature_id'][:]
+        varTmp = idCh.variables['feature_id'][:]
         varInd = np.where(varTmp == self.linksGlobal[bCurrent])
         varTmp = None
 
         # Read in GW inflow and aggregate to the basin.
-        varTmp = idGw.variables['streamflow'][varInd]
+        varTmp = idCh.variables['streamflow'][varInd]
         self.streamVolLocal[stepCurrent] = varTmp * 3600.0  # Volume of cubic meters.
         varTmp = None
 
