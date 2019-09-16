@@ -385,7 +385,7 @@ class wbObj:
         :param MpiConfig:
         :return:
         """
-        modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".GWOUT_DOMAIN1"
+        modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".CHRTOUT_DOMAIN1"
 
         # if MpiConfig.rank == 0:
         #    print(modelPath)
