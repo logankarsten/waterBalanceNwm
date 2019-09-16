@@ -92,5 +92,6 @@ class MpiConfig:
         wbObj.streamVolLocal = np.full([local_steps], -9999.0, np.float64)
         wbObj.qLatVolLocal = np.full([local_steps], -9999.0, np.float64)
         wbObj.qbdryRtLocal = np.full([local_steps], -9999.0, np.float64)
+        wbObj.gwInLocal = np.full([local_steps], -9999.0, np.float64)
         wbObj.gwOutLocal = np.full([local_steps], -9999.0, np.float64)
         wbObj.zLevLocal = np.full([local_steps], -9999.0, np.float64)

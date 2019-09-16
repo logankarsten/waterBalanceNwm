@@ -42,11 +42,13 @@ class wbObj:
         self.sfcHeadSubRtLocal = None
         self.qbdryRtLocal = None
         self.qStrmVolRtLocal = None
+        self.gwInLocal = None
         self.gwOutLocal = None
         self.zLevLocal = None
         self.geoRes = None
         self.hydRes = None
         self.aggFact = None
+        self.soilDepths = [0.1, 0.3, 0.6, 1.0]
         self.upstreamLinks = {}
         self.bsnMskLand = {}
         self.bsnMskHydro = {}
@@ -196,8 +198,182 @@ class wbObj:
         self.accSneqLocal[stepCurrent] = varTmp.sum() # Volume of cubic meters.
         varTmp = None
 
+        # Read in accumulated precipitation and aggregate to the basin.
+        varTmp = idLdas.variables['ACCPRCP'][0,:,:]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
+        self.accPrcpLocal[stepCurrent] = varTmp.sum()
+        varTmp = None
+
+        # Read in accumulated canopy evaporation and aggregate to the basin.
+        varTmp = idLdas.variables['ACCECAN'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
+        self.accEcanLocal[stepCurrent] = varTmp.sum()
+        varTmp = None
+
+        # Read in accumulated evapotranspiration and aggregate to the basin.
+        varTmp = idLdas.variables['ACCETRAN'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
+        self.accEtranLocal[stepCurrent] = varTmp.sum()
+        varTmp = None
+
+        # Read in accumulated ??????? and aggregate to the basin.
+        varTmp = idLdas.variables['ACCEDIR'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
+        self.accEdirLocal[stepCurrent] = varTmp.sum()
+        varTmp = None
+
+        # Read in canopy ice and aggregate to the basin.
+        varTmp = idLdas.variables['CANICE'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
+        self.canIceLocal[stepCurrent] = varTmp.sum()
+        varTmp = None
+
+        # Read in canopy liquid and aggregate to the basin.
+        varTmp = idLdas.variables['CANLIQ'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
+        self.canLiqLocal[stepCurrent] = varTmp.sum()
+        varTmp = None
+
+        # Read in surface runoff and aggregate to the basin.
+        varTmp = idLdas.variables['SFCRNOFF'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
+        self.sfcRnoffLocal[stepCurrent] = varTmp.sum()
+        varTmp = None
+
+        # Read in underground runoff runoff and aggregate to the basin.
+        varTmp = idLdas.variables['UGDRNOFF'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskLand[bCurrent]
+        self.uGrdRnoffLocal[stepCurrent] = varTmp.sum()
+        varTmp = None
+
+        # Read in and aggregate soil moisture from the various layers.
+        #varTmp = idLdas.variables['SOIL_M'][:, 0, :, :]
+        self.soilMLocal[stepCurrent] = 0.0
+        for lyrTmp in range(4):
+            varTmp = idLdas.variables['SOIL_M'][:, 0, lyrTmp, :]
+            indTmp = np.where(varTmp >= 0.0)
+            varTmp[indTmp] = varTmp[indTmp] * self.soilDepths[lyrTmp]
+            varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
+            self.soilMLocal[stepCurrent] = self.soilMLocal[stepCurrent] + varTmp.sum()
+            varTmp = None
+
+
         # Close the NetCDF file.
         idLdas.close()
+
+    def readRtOut(self, stepCurrent, dCurrent, bCurrent, MpiConfig):
+        """
+        Function to read in RTOUT files that contain distributed surface head, and accumulated
+        spatial variables on the routing grid.
+        :param stepCurrent:
+        :param dCurrent:
+        :param bCurrent:
+        :param MpiConfig:
+        :return:
+        """
+        modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".RTOUT_DOMAIN1"
+
+        # if MpiConfig.rank == 0:
+        #    print(modelPath)
+
+        # If the file is not present, this may not indicate an issue, but that we are only producing
+        # RTOUT files at an infrequent time period. Simply return to the main calling program and leave
+        # values in our local arrays to missing.
+        if not os.path.isfile(modelPath):
+            return
+
+        # Open the NetCDF file.
+        idRt = Dataset(modelPath, 'r')
+
+        # Read in surface head and aggregate to the basin.
+        varTmp = idRt.variables['sfcheadsubrt'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.hydRes * self.hydRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskHydro[bCurrent]
+        self.sfcHeadSubRtLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
+        varTmp = None
+
+        # Read in QBDRYRT and aggregate to the basin.
+        varTmp = idRt.variables['QBDRYRT'][0, :, :]
+        indTmp = np.where(varTmp != varTmp.fill_value)
+        varTmp[indTmp] = varTmp[indTmp] * (self.hydRes * self.hydRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskHydro[bCurrent]
+        self.qbdryRtLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
+        varTmp = None
+
+        # Read in QSTRMVOLRT and aggregate to the basin.
+        varTmp = idRt.variables['QSTRMVOLRT'][0, :, :]
+        indTmp = np.where(varTmp >= 0.0)
+        varTmp[indTmp] = varTmp[indTmp] * (self.hydRes * self.hydRes)  # Convert to cubic meters
+        varTmp = varTmp * self.bsnMskHydro[bCurrent]
+        self.qStrmVolRtLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
+        varTmp = None
+
+        # Close the NetCDF file
+        idRt.close()
+
+    def readGwOut(self, stepCurrent, dCurrent, bCurrent, MpiConfig):
+        """
+        Function to read inflow and outflow variables from groundwater output files, aggregated
+        to the basin using the uplinks calculated earlier in the program.
+        :param MpiConfig:
+        :return:
+        """
+        modelPath = self.modelDir + "/" + dCurrent.strftime('%Y%m%d%H00') + ".GWOUT_DOMAIN1"
+
+        # if MpiConfig.rank == 0:
+        #    print(modelPath)
+
+        # If the file is not present, this may not indicate an issue, but that we are only producing
+        # GWOUT files at an infrequent time period. Simply return to the main calling program and leave
+        # values in our local arrays to missing.
+        if not os.path.isfile(modelPath):
+            return
+
+        # Open the NetCDF file.
+        idGw = Dataset(modelPath, 'r')
+
+        # Read in the inflow/outflow variables, along with the feature_id variable.
+        # Using the pre-calculated uplinks, we will subset the inflow/outflow volumes,
+        # then sum up total volumes for the entire basin.
+        varTmp = idGw.variables['feature_id'][:]
+        gwInd = np.in1d(varTmp, self.upstreamLinks, invert=False)
+        varTmp = None
+
+        # Read in GW inflow and aggregate to the basin.
+        varTmp = idGw.variables['inflow'][:]
+        varTmp = varTmp[gwInd]
+        indTmp = np.where(varTmp != varTmp.fill_value)
+        varTmp = varTmp[indTmp]
+        self.gwInLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
+        varTmp = None
+
+        # Read in GW outflow and aggregate to the basin.
+        varTmp = idGw.variables['outflow'][:]
+        varTmp = varTmp[gwInd]
+        indTmp = np.where(varTmp != varTmp.fill_value)
+        varTmp = varTmp[indTmp]
+        self.gwInLocal[stepCurrent] = varTmp.sum()  # Volume of cubic meters.
+        varTmp = None
+
+        # Close the NetCDF file.
+        idGw.close()
 
     def outputWb(self, MpiConfig):
         """
