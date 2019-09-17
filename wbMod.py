@@ -275,7 +275,7 @@ class wbObj:
         #varTmp = idLdas.variables['SOIL_M'][:, 0, :, :]
         self.soilMLocal[stepCurrent] = 0.0
         for lyrTmp in range(4):
-            varTmp = idLdas.variables['SOIL_M'][:, 0, lyrTmp, :]
+            varTmp = idLdas.variables['SOIL_M'][0, :, lyrTmp, :]
             indTmp = np.where(varTmp >= 0.0)
             varTmp[indTmp] = varTmp[indTmp] * self.soilDepths[lyrTmp]
             varTmp[indTmp] = varTmp[indTmp] * (self.geoRes * self.geoRes)  # Convert to cubic meters
