@@ -48,6 +48,7 @@ class wbObj:
         self.geoRes = None
         self.hydRes = None
         self.aggFact = None
+        self.tag = None
         self.soilDepths = [0.1, 0.3, 0.6, 1.0]
         self.upstreamLinks = {}
         self.bsnMskLand = {}
@@ -436,7 +437,7 @@ class wbObj:
         :return:
         """
         outPath = self.outDir + "/WaterBudget_" + self.bDateGlobal.strftime('%Y%m%d%H') + "_" + \
-                  self.eDateGlobal.strftime('%Y%m%d%H') + ".nc"
+                  self.eDateGlobal.strftime('%Y%m%d%H') + "_" + self.tag + ".nc"
 
         if MpiConfig.rank == 0:
             if os.path.isfile(outPath):

@@ -38,6 +38,8 @@ def main():
                         help='Route link path.')
     parser.add_argument('spWtFile', metavar='spWtFile', type=str, nargs='+',
                         help='Spatial weight file used in generation of basin masks.')
+    parser.add_argument('tag', metavar='tag', type=str, nargs='+',
+                        help='Tag to append into output file.')
 
 
     # Process the input arguments into the program.
@@ -94,6 +96,7 @@ def main():
     wb_data.spWtPath = args.spWtFile[0]
     wb_data.modelDir = args.model_dir[0]
     wb_data.outDir = args.out_dir[0]
+    wb_data.tag = args.tag[0]
 
     # Initialize datetime objects
     try:
